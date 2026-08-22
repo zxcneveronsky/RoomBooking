@@ -21,7 +21,7 @@ import jakarta.validation.ConstraintViolationException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(UserNotFoundException.class)
+    @ExceptionHandler({UserNotFoundException.class, RoomNotFoundException.class})
     public ResponseEntity<Object> handleNotFound(RuntimeException ex) {
         return buildResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
     }

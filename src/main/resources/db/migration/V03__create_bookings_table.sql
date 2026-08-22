@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS bookings (
+    id       BIGSERIAL    PRIMARY KEY,
+    user_id  BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    room_id     BIGINT NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
+    start_at   TIMESTAMP NOT NULL,
+    end_at     TIMESTAMP NOT NULL
+);
+

@@ -1,0 +1,61 @@
+spring:
+  application:
+    name: RoomBooking
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/RoomBooking
+    username: postgres
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+
+  data:
+    web:
+      pageable:
+        max-page-size: 50
+        default-page-size: 12
+
+  cache:
+    type: caffeine
+    cache-names: rooms, bookings, users
+    caffeine:
+      spec: maximumSize=500,expireAfterAccess=1h
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000
+
+
+logging:
+  level:
+    root: INFO
+    org.flywaydb: INFO
+    org.hibernate.SQL: INFO
+    org.hibernate.orm.jdbc.bind: INFO
+    com.example.roombooking: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: always
+      group:
+        readiness:
+          include: db
+  health:
+    db:
+      enabled: true

@@ -13,6 +13,7 @@ public class RoomMapper {
     public RoomEntity toEntity(CreateRoomRequest request) {
         RoomEntity roomEntity = new RoomEntity();
         roomEntity.setName(request.name());
+        roomEntity.setCapacity(request.capacity());
         roomEntity.setDescription(request.description());
         return roomEntity;
     }
@@ -21,11 +22,13 @@ public class RoomMapper {
         RoomEntity roomEntity = new RoomEntity();
         roomEntity.setId(request.id());
         roomEntity.setName(request.name());
+        roomEntity.setCapacity(request.capacity());
         roomEntity.setDescription(request.description());
         return roomEntity;
     }
 
     public RoomResponse toResponse(RoomEntity roomEntity) {
-        return new RoomResponse(roomEntity.getId(), roomEntity.getName());
+        return new RoomResponse(roomEntity.getId(), roomEntity.getName(),
+                roomEntity.getCapacity(), roomEntity.getDescription());
     }
 }

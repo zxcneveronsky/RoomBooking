@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS rooms (
-    id       BIGSERIAL    PRIMARY KEY,
-    name    VARCHAR(255) NOT NULL,
-    description TEXT NOT NULL
+    id          BIGSERIAL    PRIMARY KEY,
+    name        VARCHAR(255) NOT NULL,
+    capacity    INT          NOT NULL,
+    description TEXT         NOT NULL
 );

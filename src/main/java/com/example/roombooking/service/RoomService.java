@@ -40,6 +40,7 @@ public class RoomService {
                 .map(existingRoom -> {
                     existingRoom.setName(roomUpdate.getName() != null ? roomUpdate.getName() : existingRoom.getName());
                     existingRoom.setDescription(roomUpdate.getDescription() != null ? roomUpdate.getDescription() : existingRoom.getDescription());
+                    existingRoom.setCapacity(roomUpdate.getCapacity() != null ? roomUpdate.getCapacity() : existingRoom.getCapacity());
                     return roomRepository.save(existingRoom);
                 })
                 .orElseThrow(() -> new RoomNotFoundException(roomId));

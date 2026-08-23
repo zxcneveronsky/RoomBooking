@@ -23,6 +23,9 @@ public class RoomEntity {
     @Column(nullable = false)
     private String name;
 
+    @Column(name = "capacity", nullable = false)
+    private Integer capacity;
+
     @Column(nullable = false)
     private String description;
 }

@@ -1,5 +1,7 @@
 package com.example.roombooking.service;
 
+import java.time.LocalDateTime;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,11 @@ public class RoomService {
     public RoomEntity getRoomById(Long roomId) {
         return roomRepository.findById(roomId)
                 .orElseThrow(() -> new RoomNotFoundException(roomId));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<RoomEntity> getAvailableRooms(int requiredCapacity, LocalDateTime startFrom, LocalDateTime endTo, Pageable pageable) {
+        return roomRepository.findAvailableByCapacityAndPeriod(requiredCapacity, startFrom, endTo, pageable);
     }
 
     @Transactional

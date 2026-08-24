@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
         return buildResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(UserAlreadyExistsException.class)
+    @ExceptionHandler({UserAlreadyExistsException.class, RoomAlreadyBookedException.class})
     public ResponseEntity<Object> handleAlreadyExists(RuntimeException ex) {
         return buildResponse(ex.getMessage(), HttpStatus.CONFLICT);
     }

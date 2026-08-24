@@ -1,23 +1,17 @@
 package com.example.roombooking.mapper;
 
-import com.example.roombooking.dto.request.BookingRequest;
+import com.example.roombooking.dto.request.CreateBookingRequest;
 import com.example.roombooking.dto.request.UpdateBookingRequest;
 import com.example.roombooking.dto.response.BookingResponse;
 import com.example.roombooking.entity.BookingEntity;
-import com.example.roombooking.entity.RoomEntity;
 import org.springframework.stereotype.Component;
 
 @Component
 public class BookingMapper {
-    public BookingEntity toEntity(BookingRequest request){
+    public BookingEntity toEntity(CreateBookingRequest request) {
         BookingEntity bookingEntity = new BookingEntity();
         bookingEntity.setStartAt(request.startAt());
         bookingEntity.setEndAt(request.endAt());
-        if (request.roomId() != null) {
-            RoomEntity roomEntity = new RoomEntity();
-            roomEntity.setId(request.roomId());
-            bookingEntity.setRoom(roomEntity);
-        }
         return bookingEntity;
     }
 
@@ -26,11 +20,7 @@ public class BookingMapper {
         bookingEntity.setId(request.id());
         bookingEntity.setStartAt(request.startAt());
         bookingEntity.setEndAt(request.endAt());
-        if (request.roomId() != null) {
-            RoomEntity roomEntity = new RoomEntity();
-            roomEntity.setId(request.roomId());
-            bookingEntity.setRoom(roomEntity);
-        }
+
         return bookingEntity;
     }
 

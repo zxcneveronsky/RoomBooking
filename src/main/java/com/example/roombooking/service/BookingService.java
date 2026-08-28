@@ -1,5 +1,6 @@
 package com.example.roombooking.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.springframework.data.domain.Page;
@@ -26,9 +27,12 @@ public class BookingService {
     private final RoomRepository roomRepository;
 
     @Transactional(readOnly = true)
-    public Page<BookingEntity> getAllBookings(Long userId, LocalDateTime from, LocalDateTime to, Pageable pageable) {
+    public Page<BookingEntity> getAllBookings(Long userId, LocalDate date, Pageable pageable) {
         return bookingRepository.findAllBookingsInPeriodByUserId(
-                userId, from, to, pageable);
+                userId,
+                date.atStartOfDay(),
+                date.plusDays(1).atStartOfDay(),
+                pageable);
     }
 
     @Transactional(readOnly = true)

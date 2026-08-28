@@ -10,7 +10,7 @@ import com.example.roombooking.service.BookingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,10 +47,9 @@ public class BookingController {
     @GetMapping
     public Page<BookingResponse> getAllBookings(
         @AuthenticationPrincipal UserDetailsAdapter adapter,
-        @RequestParam(value = "from", required = true) LocalDateTime from,
-        @RequestParam(value = "to", required = true) LocalDateTime to,
+        @RequestParam("date") LocalDate date,
         Pageable pageable) {
-        return bookingService.getAllBookings(adapter.getUserId(), from, to, pageable)
+        return bookingService.getAllBookings(adapter.getUserId(), date, pageable)
                 .map(bookingMapper::toResponse);
     }
 

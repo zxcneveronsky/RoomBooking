@@ -17,13 +17,12 @@ public interface RoomRepository extends JpaRepository<RoomEntity, Long> {
     @EntityGraph(attributePaths = {"options"})
     @Query("""
         SELECT r FROM RoomEntity r
-        WHERE (:name IS NULL OR LOWER(r.name) LIKE LOWER(CONCAT('%', :name, '%')))
+        WHERE (:name IS NULL OR LENGTH(TRIM(CAST(:name AS string))) = 0 OR LOWER(r.name) LIKE CONCAT('%', LOWER(CAST(:name AS string)), '%'))
           AND (:capacity IS NULL OR r.capacity >= :capacity)
           AND (:floor IS NULL OR r.floor = :floor)
-          AND (:optionIds IS NULL OR (
-                SELECT COUNT(o2.id) FROM r.options o2
-                WHERE o2.id IN :optionIds
-              ) = SIZE(:optionIds))
+          AND (:optionIds IS NULL OR NOT EXISTS (SELECT 1 FROM OptionEntity o WHERE o.id IN :optionIds) OR NOT EXISTS (
+                SELECT 1 FROM OptionEntity o
+                WHERE o.id IN :optionIds AND o NOT MEMBER OF r.options))
         """)
     Page<RoomEntity> searchRoom(
         @Param("name") String name,
@@ -36,7 +35,7 @@ public interface RoomRepository extends JpaRepository<RoomEntity, Long> {
     @EntityGraph(attributePaths = {"options"})
     @Query("""
         SELECT r FROM RoomEntity r
-        WHERE (:name IS NULL OR LOWER(r.name) LIKE LOWER(CONCAT('%', :name, '%')))
+        WHERE (:name IS NULL OR LENGTH(TRIM(CAST(:name AS string))) = 0 OR LOWER(r.name) LIKE CONCAT('%', LOWER(CAST(:name AS string)), '%'))
           AND r.capacity >= :requiredCapacity
           AND (:floor IS NULL OR r.floor = :floor)
           AND NOT EXISTS (
@@ -44,10 +43,9 @@ public interface RoomRepository extends JpaRepository<RoomEntity, Long> {
                 WHERE b.room = r
                   AND b.endAt   > :startFrom
                   AND b.startAt < :endTo)
-          AND (:optionIds IS NULL OR (
-                SELECT COUNT(o2.id) FROM r.options o2
-                WHERE o2.id IN :optionIds
-              ) = SIZE(:optionIds))
+          AND (:optionIds IS NULL OR NOT EXISTS (SELECT 1 FROM OptionEntity o WHERE o.id IN :optionIds) OR NOT EXISTS (
+                SELECT 1 FROM OptionEntity o
+                WHERE o.id IN :optionIds AND o NOT MEMBER OF r.options))
         """)
     Page<RoomEntity> searchAvailableRoom(
         @Param("name") String name,

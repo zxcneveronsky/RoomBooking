@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дашборд | RoomBooking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@800&display=swap" rel="stylesheet">
+</head>
+<body>
+<div id="appNav"></div>
+
+<main class="pt-24 pb-20 px-6 max-w-6xl mx-auto">
+    <div class="animate__animated animate__fadeInDown mb-10 pt-4">
+        <h1 class="hero-title text-5xl lg:text-6xl font-extrabold tracking-tighter mb-2">
+            Привет, <span id="greeting-name" class="text-blue-600">коллега</span>
+        </h1>
+        <p class="text-gray-400 text-lg font-medium">Твои бронирования на выбранную дату</p>
+    </div>
+
+    <section class="animate__animated animate__fadeIn mb-8 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+        <a href="/rooms.html" class="feature-card p-5 sm:p-8 flex items-center gap-4 sm:gap-6 group">
+            <div class="text-4xl sm:text-5xl group-hover:scale-110 transition duration-500 shrink-0">🔍</div>
+            <div>
+                <h3 class="font-bold text-lg sm:text-xl text-gray-900 leading-none">Найти комнату</h3>
+                <p class="text-[10px] text-blue-500 mt-2 sm:mt-3 uppercase tracking-widest font-black">Поиск и бронь</p>
+            </div>
+        </a>
+        <a href="/rooms.html?manage=1" class="feature-card p-5 sm:p-8 flex items-center gap-4 sm:gap-6 group">
+            <div class="text-4xl sm:text-5xl group-hover:scale-110 transition duration-500 shrink-0">🛠️</div>
+            <div>
+                <h3 class="font-bold text-lg sm:text-xl text-gray-900 leading-none">Управление</h3>
+                <p class="text-[10px] text-blue-500 mt-2 sm:mt-3 uppercase tracking-widest font-black">Создать / изменить</p>
+            </div>
+        </a>
+        <div class="dash-card p-5 sm:p-8 flex items-center gap-4 sm:gap-6">
+            <div class="text-4xl sm:text-5xl shrink-0">📊</div>
+            <div>
+                <h3 class="font-bold text-lg sm:text-xl text-gray-900 leading-none">Броней сегодня</h3>
+                <p class="text-3xl font-black text-blue-600 mt-2"><span id="bookingCount">0</span></p>
+            </div>
+        </div>
+    </section>
+
+    <section class="animate__animated animate__fadeIn animate__delay-1s">
+        <div class="dash-card p-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <h2 class="font-bold text-2xl">📅 Мои бронирования</h2>
+                <input type="date" id="bookingDate" class="input-base px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold">
+            </div>
+            <div id="bookingsList" class="space-y-3"></div>
+            <div id="bookingsPagination" class="flex justify-center items-center gap-2 mt-6"></div>
+        </div>
+    </section>
+</main>
+
+<div class="modal-overlay" id="bookingModal">
+    <div class="modal-box animate__animated animate__fadeInUp">
+        <div class="flex justify-between items-center mb-6">
+            <h2 id="bookingModalTitle" class="font-black text-xl text-gray-900">Редактировать бронь</h2>
+            <button onclick="closeBookingModal()" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+        </div>
+        <input type="hidden" id="bookingId">
+        <div class="space-y-4">
+            <div>
+                <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Комната</label>
+                <select id="bookingRoom" class="w-full mt-1.5 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 bg-white text-sm font-bold transition"></select>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Начало</label>
+                <input id="bookingStart" type="datetime-local" class="input-base w-full mt-1.5 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none text-sm transition">
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Конец</label>
+                <input id="bookingEnd" type="datetime-local" class="input-base w-full mt-1.5 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none text-sm transition">
+            </div>
+        </div>
+        <p id="bookingError" class="text-red-500 text-sm mt-4 hidden"></p>
+        <button onclick="saveBooking()" class="btn-apple bg-blue-600 text-white font-bold py-3.5 w-full text-sm mt-6">Сохранить</button>
+    </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+if (!isAuth()) window.location.href = '/login.html';
+
+let bookingsPage = 0;
+let roomsCache = [];
+
+window.addEventListener('pageshow', async () => {
+    buildAppNav('dashboard');
+    const email = localStorage.getItem('email') || '';
+    const name = email ? email.split('@')[0] : 'коллега';
+    document.getElementById('greeting-name').textContent = name;
+    document.getElementById('bookingDate').value = todayLocal();
+    await loadRoomsForSelect();
+    loadBookings(0);
+});
+
+document.getElementById('bookingDate').addEventListener('change', () => loadBookings(0));
+
+async function loadRoomsForSelect() {
+    try {
+        const data = await request('/rooms?size=100');
+        roomsCache = data ? data.content : [];
+        const sel = document.getElementById('bookingRoom');
+        sel.innerHTML = roomsCache.map(r => `<option value="${r.id}">${escapeHtml(r.name)}</option>`).join('');
+    } catch (e) { roomsCache = []; }
+}
+
+async function loadBookings(page) {
+    bookingsPage = page;
+    const date = document.getElementById('bookingDate').value || todayLocal();
+    try {
+        const data = await request(`/bookings?date=${encodeURIComponent(date)}&page=${page}&size=12`);
+        document.getElementById('bookingCount').textContent = data.totalElements;
+        if (!data.content || data.content.length === 0) {
+            document.getElementById('bookingsList').innerHTML = `
+                <div class="text-center text-gray-400 py-10">
+                    <div class="text-5xl mb-3">🗓️</div>
+                    <p class="font-semibold">На эту дату броней нет</p>
+                    <a href="/rooms.html" class="text-blue-600 font-semibold hover:underline text-sm">Забронировать комнату →</a>
+                </div>`;
+            document.getElementById('bookingsPagination').innerHTML = '';
+            return;
+        }
+        document.getElementById('bookingsList').innerHTML = data.content.map(b => `
+            <div class="flex items-center justify-between gap-4 p-4 rounded-2xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition">
+                <div class="flex items-center gap-4 min-w-0">
+                    <div class="text-3xl shrink-0">🚪</div>
+                    <div class="min-w-0">
+                        <p class="font-bold text-gray-900 truncate">${escapeHtml(b.roomName || 'Комната #' + b.roomId)}</p>
+                        <p class="text-sm text-gray-500">${formatTimeRange(b.startAt, b.endAt)}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="editBooking(${b.id}, ${b.roomId}, '${b.startAt}', '${b.endAt}')" class="text-xs font-bold text-blue-600 hover:text-blue-800 px-3 py-2 rounded-xl hover:bg-blue-50">Изменить</button>
+                    <button onclick="deleteBooking(${b.id})" class="text-xs font-bold text-red-500 hover:text-red-700 px-3 py-2 rounded-xl hover:bg-red-50">Отменить</button>
+                </div>
+            </div>
+        `).join('');
+        renderPagination('bookingsPagination', data, loadBookings);
+    } catch (e) { console.error('loadBookings error:', e); }
+}
+
+function editBooking(id, roomId, startAt, endAt) {
+    document.getElementById('bookingModalTitle').textContent = 'Редактировать бронь';
+    document.getElementById('bookingId').value = id;
+    document.getElementById('bookingRoom').value = roomId;
+    document.getElementById('bookingStart').value = toDateTimeInput(new Date(startAt));
+    document.getElementById('bookingEnd').value = toDateTimeInput(new Date(endAt));
+    document.getElementById('bookingError').classList.add('hidden');
+    document.getElementById('bookingModal').classList.add('open');
+}
+
+function closeBookingModal() {
+    document.getElementById('bookingModal').classList.remove('open');
+}
+
+async function saveBooking() {
+    const id = document.getElementById('bookingId').value;
+    const roomId = parseInt(document.getElementById('bookingRoom').value);
+    const startAt = toBackendDateTime(document.getElementById('bookingStart').value);
+    const endAt = toBackendDateTime(document.getElementById('bookingEnd').value);
+    const err = document.getElementById('bookingError');
+    err.classList.add('hidden');
+    if (!startAt || !endAt) { err.textContent = 'Укажите время начала и конца'; err.classList.remove('hidden'); return; }
+    if (new Date(startAt) >= new Date(endAt)) { err.textContent = 'Время окончания должно быть позже начала'; err.classList.remove('hidden'); return; }
+    try {
+        await request('/bookings', {
+            method: 'PATCH',
+            body: JSON.stringify({ id: parseInt(id), roomId, startAt, endAt })
+        });
+        closeBookingModal();
+        loadBookings(bookingsPage);
+    } catch (e) { err.textContent = e.message; err.classList.remove('hidden'); }
+}
+
+async function deleteBooking(id) {
+    if (!confirm('Отменить бронь #' + id + '?')) return;
+    try {
+        await request('/bookings/' + id, { method: 'DELETE' });
+        loadBookings(bookingsPage);
+    } catch (e) { alert('Ошибка: ' + e.message); }
+}
+</script>
+</body>
+</html>

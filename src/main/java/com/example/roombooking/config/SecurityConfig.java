@@ -34,11 +34,13 @@ public class SecurityConfig {
                         })
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/",
-                                "/api/v1/auth/login",
-                                "/api/v1/auth/register"
-                        ).permitAll()
+                .requestMatchers(
+                        "/",
+                        "/*.html",
+                        "/js/**",
+                        "/api/v1/auth/login",
+                        "/api/v1/auth/register"
+                ).permitAll()
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                         .anyRequest().authenticated()
                 )

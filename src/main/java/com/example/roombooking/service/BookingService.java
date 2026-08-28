@@ -55,14 +55,11 @@ public class BookingService {
 
     @Transactional
     public BookingEntity createBooking(BookingEntity bookingEntity, Long userId, Long roomId) {
-        if (!roomRepository.existsById(roomId)) {
-            throw new RoomNotFoundException(roomId);
-        }
         if (bookingRepository.existsByRoomIdAndPeriod(roomId, bookingEntity.getStartAt(), bookingEntity.getEndAt())) {
             throw new RoomAlreadyBookedException();
         }
         bookingEntity.setUser(userRepository.getReferenceById(userId));
-        bookingEntity.setRoom(roomRepository.getReferenceById(roomId));
+        bookingEntity.setRoom(roomRepository.findById(roomId).orElseThrow(() -> new RoomNotFoundException(roomId)));
         return bookingRepository.save(bookingEntity);
     }
 

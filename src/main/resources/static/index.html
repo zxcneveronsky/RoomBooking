@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoomBooking — бронирование переговорных</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@800&display=swap" rel="stylesheet">
+</head>
+<body>
+<div id="appNav"></div>
+
+<main class="pt-24 sm:pt-32 pb-20 sm:pb-32 flex flex-col items-center text-center px-4 sm:px-6">
+
+    <h1 class="animate__animated animate__fadeInDown hero-title text-4xl sm:text-7xl md:text-8xl font-extrabold mb-4 sm:mb-5 tracking-tighter">
+        Room<span class="text-blue-600">Booking</span>
+    </h1>
+
+    <p class="animate__animated animate__fadeInUp text-lg sm:text-xl md:text-3xl font-bold text-gray-700 mb-6 sm:mb-10 tracking-tight">
+        Переговорные — под контролем
+    </p>
+
+    <div class="animate__animated animate__fadeIn animate__delay-1s max-w-2xl mb-10 sm:mb-14">
+        <p class="text-gray-500 text-sm sm:text-base md:text-lg font-medium leading-relaxed px-2 sm:px-4">
+            <span class="text-blue-600 font-semibold">RoomBooking</span> — сервис бронирования переговорных комнат.
+            Ищи свободные помещения по вместимости, этажу и оснащению, создавай брони в пару кликов
+            и управляй своими встречами в одном месте.
+        </p>
+        <p class="mt-4 text-gray-900 text-base sm:text-lg md:text-xl font-bold tracking-tight">
+            Найди идеальную комнату. Быстро.
+        </p>
+    </div>
+
+    <div class="animate__animated animate__fadeInUp animate__delay-1s flex flex-col sm:flex-row gap-3 sm:gap-8 mb-16 sm:mb-28 w-full sm:w-auto px-4 sm:px-0">
+        <div class="flex flex-col items-center group">
+            <a href="/register.html" class="btn-apple bg-blue-600 text-white text-sm sm:text-lg font-bold px-6 sm:px-16 py-2.5 sm:py-6 shadow-2xl shadow-blue-100 w-full sm:w-auto text-center">
+                Регистрация
+            </a>
+            <span class="mt-2 sm:mt-3 text-[9px] font-black text-gray-300 uppercase tracking-widest group-hover:text-blue-500 transition-colors">
+                Создать аккаунт
+            </span>
+        </div>
+        <div class="flex flex-col items-center group">
+            <a href="/login.html" class="btn-apple bg-white border border-gray-200 text-black text-sm sm:text-lg font-bold px-6 sm:px-16 py-2.5 sm:py-6 hover:bg-gray-50 w-full sm:w-auto text-center">
+                Вход
+            </a>
+            <span class="mt-2 sm:mt-3 text-[9px] font-black text-gray-300 uppercase tracking-widest group-hover:text-black transition-colors">
+                Уже с нами
+            </span>
+        </div>
+    </div>
+
+    <section class="animate__animated animate__fadeIn animate__delay-2s w-full max-w-5xl px-2 sm:px-4">
+        <div class="flex items-center gap-4 sm:gap-6 mb-8 sm:mb-12">
+            <div class="h-px bg-gray-100 flex-1"></div>
+            <span class="text-[9px] font-black text-gray-300 uppercase tracking-[0.3em] sm:tracking-[0.5em] whitespace-nowrap">Возможности</span>
+            <div class="h-px bg-gray-100 flex-1"></div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 md:gap-8 text-left">
+            <div class="feature-card p-5 sm:p-8 flex items-center gap-5 sm:gap-8 group">
+                <div class="text-4xl sm:text-5xl group-hover:scale-110 transition duration-500 shrink-0">🔍</div>
+                <div>
+                    <h3 class="font-bold text-lg sm:text-xl text-gray-900 leading-none">Поиск комнат</h3>
+                    <p class="text-[10px] text-blue-500 mt-2 sm:mt-3 uppercase tracking-widest font-black">По фильтрам</p>
+                </div>
+            </div>
+            <div class="feature-card p-5 sm:p-8 flex items-center gap-5 sm:gap-8 group">
+                <div class="text-4xl sm:text-5xl group-hover:scale-110 transition duration-500 shrink-0">📅</div>
+                <div>
+                    <h3 class="font-bold text-lg sm:text-xl text-gray-900 leading-none">Бронирование</h3>
+                    <p class="text-[10px] text-blue-500 mt-2 sm:mt-3 uppercase tracking-widest font-black">За пару кликов</p>
+                </div>
+            </div>
+            <div class="feature-card p-5 sm:p-8 flex items-center gap-5 sm:gap-8 group">
+                <div class="text-4xl sm:text-5xl group-hover:scale-110 transition duration-500 shrink-0">🛠️</div>
+                <div>
+                    <h3 class="font-bold text-lg sm:text-xl text-gray-900 leading-none">Управление</h3>
+                    <p class="text-[10px] text-blue-500 mt-2 sm:mt-3 uppercase tracking-widest font-black">Комнаты и брони</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script src="/js/api.js"></script>
+<script>
+    (function() {
+        try {
+            const token = localStorage.getItem('token');
+            if (token) {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                if (payload.exp * 1000 > Date.now()) { window.location.href = '/dashboard.html'; }
+            }
+        } catch (e) {}
+    })();
+    buildPublicNav();
+</script>
+</body>
+</html>

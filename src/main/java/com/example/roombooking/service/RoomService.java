@@ -25,11 +25,6 @@ public class RoomService {
     private final OptionRepository optionRepository;
 
     @Transactional(readOnly = true)
-    public Page<RoomEntity> getAllRooms(Pageable pageable) {
-        return roomRepository.findAll(pageable);
-    }
-
-    @Transactional(readOnly = true)
     public RoomEntity getRoomById(Long roomId) {
         return roomRepository.findById(roomId)
                 .orElseThrow(() -> new RoomNotFoundException(roomId));

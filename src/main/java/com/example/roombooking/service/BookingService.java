@@ -2,6 +2,7 @@ package com.example.roombooking.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +26,17 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final RoomRepository roomRepository;
+
+    @Transactional(readOnly = true)
+    public List<BookingEntity> getRoomSchedule(Long roomId, LocalDate date) {
+        if (!roomRepository.existsById(roomId)) {
+            throw new RoomNotFoundException(roomId);
+        }
+        return bookingRepository.findByRoomIdAndPeriod(
+                roomId,
+                date.atStartOfDay(),
+                date.plusDays(1).atStartOfDay());
+    }
 
     @Transactional(readOnly = true)
     public Page<BookingEntity> getAllBookings(Long userId, LocalDate date, Pageable pageable) {

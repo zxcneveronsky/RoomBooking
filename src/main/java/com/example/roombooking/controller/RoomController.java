@@ -57,13 +57,13 @@ public class RoomController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public RoomResponse createRoom(@Valid @RequestBody CreateRoomRequest request) {
-        return roomMapper.toResponse(roomService.createRoom(roomMapper.toEntity(request)));
+        return roomMapper.toResponse(roomService.createRoom(roomMapper.toEntity(request), request.optionIds()));
     }
 
     @PatchMapping
     @ResponseStatus(HttpStatus.OK)
     public RoomResponse updateRoom(@Valid @RequestBody UpdateRoomRequest request) {
-        return roomMapper.toResponse(roomService.updateRoom(roomMapper.toEntity(request)));
+        return roomMapper.toResponse(roomService.updateRoom(roomMapper.toEntity(request), request.optionIds()));
     }
 
     @DeleteMapping("/{id}")

@@ -1,6 +1,7 @@
 package com.example.roombooking.controller;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,11 +48,15 @@ public class RoomController {
 
     @GetMapping("/available")
     public Page<RoomResponse> getAvailableRooms(
-            @RequestParam("requiredCapacity") int requiredCapacity,
+            @RequestParam("requiredCapacity") Integer requiredCapacity,
             @RequestParam("startFrom") LocalDateTime startFrom,
             @RequestParam("endTo") LocalDateTime endTo,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Integer floor,
+            @RequestParam(required = false) List<Long> optionIds,
             Pageable pageable) {
-        return roomService.getAvailableRooms(requiredCapacity, startFrom, endTo, pageable).map(roomMapper::toResponse);
+        return roomService.searchAvailableRooms(name, requiredCapacity, floor, optionIds, startFrom, endTo, pageable)
+                .map(roomMapper::toResponse);
     }
 
     @PostMapping

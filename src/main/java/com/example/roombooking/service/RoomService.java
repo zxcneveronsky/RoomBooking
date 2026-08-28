@@ -36,8 +36,16 @@ public class RoomService {
     }
 
     @Transactional(readOnly = true)
-    public Page<RoomEntity> getAvailableRooms(int requiredCapacity, LocalDateTime startFrom, LocalDateTime endTo, Pageable pageable) {
-        return roomRepository.findAvailableByCapacityAndPeriod(requiredCapacity, startFrom, endTo, pageable);
+    public Page<RoomEntity> searchAvailableRooms(
+            String name,
+            Integer requiredCapacity,
+            Integer floor,
+            List<Long> optionIds,
+            LocalDateTime startFrom,
+            LocalDateTime endTo,
+            Pageable pageable) {
+        return roomRepository.searchAvailableRoom(
+                name, requiredCapacity, floor, optionIds, startFrom, endTo, pageable);
     }
 
     @Transactional

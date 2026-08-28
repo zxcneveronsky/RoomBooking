@@ -37,8 +37,14 @@ public class RoomController {
     private final RoomMapper roomMapper;
 
     @GetMapping
-    public Page<RoomResponse> getAllRooms(Pageable pageable) {
-        return roomService.getAllRooms(pageable).map(roomMapper::toResponse);
+    public Page<RoomResponse> searchRooms(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Integer capacity,
+            @RequestParam(required = false) Integer floor,
+            @RequestParam(required = false) List<Long> optionIds,
+            Pageable pageable) {
+        return roomService.searchRooms(name, capacity, floor, optionIds, pageable)
+                .map(roomMapper::toResponse);
     }
 
     @GetMapping("/{id}")

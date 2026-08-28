@@ -18,6 +18,25 @@ public interface RoomRepository extends JpaRepository<RoomEntity, Long> {
     @Query("""
         SELECT r FROM RoomEntity r
         WHERE (:name IS NULL OR LOWER(r.name) LIKE LOWER(CONCAT('%', :name, '%')))
+          AND (:capacity IS NULL OR r.capacity >= :capacity)
+          AND (:floor IS NULL OR r.floor = :floor)
+          AND (:optionIds IS NULL OR (
+                SELECT COUNT(o2.id) FROM r.options o2
+                WHERE o2.id IN :optionIds
+              ) = SIZE(:optionIds))
+        """)
+    Page<RoomEntity> searchRoom(
+        @Param("name") String name,
+        @Param("capacity") Integer capacity,
+        @Param("floor") Integer floor,
+        @Param("optionIds") List<Long> optionIds,
+        Pageable pageable
+    );
+
+    @EntityGraph(attributePaths = {"options"})
+    @Query("""
+        SELECT r FROM RoomEntity r
+        WHERE (:name IS NULL OR LOWER(r.name) LIKE LOWER(CONCAT('%', :name, '%')))
           AND r.capacity >= :requiredCapacity
           AND (:floor IS NULL OR r.floor = :floor)
           AND NOT EXISTS (

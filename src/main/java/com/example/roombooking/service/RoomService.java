@@ -36,6 +36,16 @@ public class RoomService {
     }
 
     @Transactional(readOnly = true)
+    public Page<RoomEntity> searchRooms(
+            String name,
+            Integer capacity,
+            Integer floor,
+            List<Long> optionIds,
+            Pageable pageable) {
+        return roomRepository.searchRoom(name, capacity, floor, optionIds, pageable);
+    }
+
+    @Transactional(readOnly = true)
     public Page<RoomEntity> searchAvailableRooms(
             String name,
             Integer requiredCapacity,

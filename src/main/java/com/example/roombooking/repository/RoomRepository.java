@@ -15,6 +15,9 @@ import com.example.roombooking.entity.RoomEntity;
 public interface RoomRepository extends JpaRepository<RoomEntity, Long> {
 
     @EntityGraph(attributePaths = {"options"})
+    Optional<RoomEntity> findByIdWithOptions(Long id);
+
+    @EntityGraph(attributePaths = {"options"})
     @Query("""
         SELECT r FROM RoomEntity r
         WHERE (:name IS NULL OR LOWER(r.name) LIKE LOWER(CONCAT('%', :name, '%')))
@@ -58,4 +61,7 @@ public interface RoomRepository extends JpaRepository<RoomEntity, Long> {
         @Param("endTo") LocalDateTime endTo,
         Pageable pageable
     );
+
+    @EntityGraph(attributePaths = {"options"})
+    Optional<RoomEntity> findByIdWithOptions(Long id);
 }

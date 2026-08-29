@@ -38,6 +38,7 @@ public class RoomService {
             List<Long> optionIds,
             Pageable pageable) {
         return roomRepository.searchRoom(name, capacity, floor, optionIds, pageable);
+        
     }
 
     @Transactional(readOnly = true)

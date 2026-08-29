@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Переговорные | RoomBooking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@800&display=swap" rel="stylesheet">
+</head>
+<body>
+<div id="appNav"></div>
+
+<main class="pt-24 pb-20 px-6 max-w-6xl mx-auto">
+    <div class="animate__animated animate__fadeInDown mb-8">
+        <div class="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+                <h1 class="hero-title text-4xl lg:text-5xl font-extrabold tracking-tighter mb-2">Переговорные</h1>
+                <p class="text-gray-400 text-lg font-medium">Поиск, бронирование и управление комнатами</p>
+            </div>
+            <button onclick="openRoomModal()" class="btn-apple bg-blue-600 text-white text-sm font-bold px-5 py-3">＋ Создать комнату</button>
+        </div>
+    </div>
+
+    <div class="dash-card p-5 sm:p-6 mb-6">
+        <div class="flex gap-2 mb-5 overflow-x-auto" style="scrollbar-width:thin">
+            <button onclick="switchTab('all')" id="tabAll" class="tab-btn px-5 py-2.5 text-sm font-bold bg-blue-600 text-white whitespace-nowrap rounded-xl">🏠 Все комнаты</button>
+            <button onclick="switchTab('available')" id="tabAvailable" class="tab-btn px-5 py-2.5 text-sm font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 whitespace-nowrap rounded-xl">✅ Доступные</button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+            <input id="fName" placeholder="Название" class="input-base px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none text-sm">
+            <input id="fCapacity" type="number" min="1" placeholder="Вместимость (от)" class="input-base px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none text-sm">
+            <input id="fFloor" type="number" min="0" placeholder="Этаж" class="input-base px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none text-sm">
+            <button onclick="applyFilters()" class="btn-apple bg-blue-600 text-white font-bold py-2.5 rounded-xl text-sm hover:bg-blue-700">Найти</button>
+        </div>
+
+        <div id="availabilityFilters" class="hidden grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+            <input id="fStart" type="datetime-local" onchange="applyFilters()" class="input-base px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none text-sm">
+            <input id="fEnd" type="datetime-local" onchange="applyFilters()" class="input-base px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none text-sm">
+            <button onclick="applyFilters()" class="btn-apple bg-blue-600 text-white font-bold py-2.5 rounded-xl text-sm hover:bg-blue-700">Проверить</button>
+        </div>
+
+        <details class="mt-2">
+            <summary class="text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer select-none hover:text-blue-600">Оснащение (опции)</summary>
+            <div id="optionFilters" class="mt-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2"></div>
+        </details>
+    </div>
+
+    <div id="roomsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"></div>
+    <div id="roomsPagination" class="flex justify-center items-center gap-2 mt-8"></div>
+</main>
+
+<!-- Детали комнаты -->
+<div class="modal-overlay" id="roomDetailModal">
+    <div class="modal-box animate__animated animate__fadeInUp" style="max-width:600px">
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <h2 id="detailName" class="font-black text-2xl text-gray-900"></h2>
+                <p id="detailMeta" class="text-sm text-gray-500 mt-1"></p>
+            </div>
+            <button onclick="closeRoomDetail()" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+        </div>
+        <p id="detailDesc" class="text-gray-600 text-sm mb-4"></p>
+        <div id="detailOptions" class="flex flex-wrap gap-2 mb-5"></div>
+        <div class="mb-4">
+            <div class="flex items-center justify-between mb-2">
+                <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Расписание на дату</label>
+                <input type="date" id="detailDate" class="input-base px-3 py-1.5 border border-gray-200 rounded-xl text-xs font-semibold" onchange="loadRoomSchedule()">
+            </div>
+            <div id="roomSchedule" class="space-y-2 max-h-48 overflow-y-auto"></div>
+        </div>
+        <button onclick="openBookingForRoom()" class="btn-apple w-full bg-blue-600 text-white font-bold py-3 rounded-xl text-sm hover:bg-blue-700">Забронировать</button>
+    </div>
+</div>
+
+<!-- Создание / редактирование комнаты -->
+<div class="modal-overlay" id="roomModal">
+    <div class="modal-box animate__animated animate__fadeInUp">
+        <div class="flex justify-between items-center mb-6">
+            <h2 id="roomModalTitle" class="font-black text-xl text-gray-900">Создать комнату</h2>
+            <button onclick="closeRoomModal()" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+        </div>
+        <input type="hidden" id="roomId">
+        <div class="space-y-4">
+            <div>
+                <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Название</label>
+                <input id="roomName" class="input-base w-full mt-1.5 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none text-sm transition">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Вместимость</label>
+                    <input id="roomCapacity" type="number" min="1" class="input-base w-full mt-1.5 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none text-sm transition">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Этаж</label>
+                    <input id="roomFloor" type="number" min="0" class="input-base w-full mt-1.5 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none text-sm transition">
+                </div>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Описание</label>
+                <textarea id="roomDesc" rows="3" class="input-base w-full mt-1.5 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none text-sm transition resize-none"></textarea>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Оснащение</label>
+                <div id="roomOptionCheckboxes" class="mt-2 grid grid-cols-2 gap-2"></div>
+            </div>
+        </div>
+        <p id="roomError" class="text-red-500 text-sm mt-4 hidden"></p>
+        <button onclick="saveRoom()" class="btn-apple bg-blue-600 text-white font-bold py-3.5 w-full text-sm mt-6">Сохранить</button>
+    </div>
+</div>
+
+<!-- Бронирование -->
+<div class="modal-overlay" id="bookingModal">
+    <div class="modal-box animate__animated animate__fadeInUp">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="font-black text-xl text-gray-900">Забронировать комнату</h2>
+            <button onclick="closeBookingModal()" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+        </div>
+        <input type="hidden" id="bookingRoomId">
+        <div class="space-y-4">
+            <div>
+                <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Комната</label>
+                <p id="bookingRoomName" class="text-lg font-bold text-gray-900 mt-1"></p>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Начало</label>
+                <input id="bookingStart" type="datetime-local" class="input-base w-full mt-1.5 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none text-sm transition">
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Конец</label>
+                <input id="bookingEnd" type="datetime-local" class="input-base w-full mt-1.5 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none text-sm transition">
+            </div>
+        </div>
+        <p id="bookingError" class="text-red-500 text-sm mt-4 hidden"></p>
+        <button onclick="createBooking()" class="btn-apple bg-blue-600 text-white font-bold py-3.5 w-full text-sm mt-6">Забронировать</button>
+    </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+if (!isAuth()) window.location.href = '/login.html';
+
+let currentTab = 'all';
+let roomsPage = 0;
+let selectedOptionIds = new Set();
+let availReqSeq = 0; // защита от устаревших ответов в loadAvailable (race)
+let editingRoomId = null;
+let detailRoomId = null;
+let detailRoomName = null;
+
+window.addEventListener('pageshow', async () => {
+    buildAppNav('rooms');
+    await ensureOptions();
+    if (new URLSearchParams(window.location.search).get('manage') === '1') {
+        // прокрутить к созданию / сразу открыть модалку создания
+    }
+    document.getElementById('detailDate').value = todayLocal();
+    applyFilters();
+});
+
+function switchTab(tab) {
+    currentTab = tab;
+    const all = document.getElementById('tabAll');
+    const avail = document.getElementById('tabAvailable');
+    all.className = 'tab-btn px-5 py-2.5 text-sm font-bold whitespace-nowrap rounded-xl ' + (tab === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200');
+    avail.className = 'tab-btn px-5 py-2.5 text-sm font-bold whitespace-nowrap rounded-xl ' + (tab === 'available' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200');
+    document.getElementById('availabilityFilters').classList.toggle('hidden', tab !== 'available');
+    if (tab === 'available') prefillAvailabilityDates();
+    applyFilters();
+}
+
+// Подставляем в поля "Доступные" осмысленное окно (сейчас+1ч … +2ч),
+// чтобы при поиске никогда не улетал дефолт "сегодня 00:00–23:59"
+// (из-за которого занятая сегодня комната ошибочно скрывалась).
+function prefillAvailabilityDates() {
+    if (!document.getElementById('fStart').value) {
+        document.getElementById('fStart').value = toDateTimeInput(new Date(Date.now() + 60 * 60 * 1000));
+    }
+    if (!document.getElementById('fEnd').value) {
+        document.getElementById('fEnd').value = toDateTimeInput(new Date(Date.now() + 2 * 60 * 60 * 1000));
+    }
+}
+
+// --- Опции (кэш из комнат) ---
+async function ensureOptions() {
+    try {
+        const data = await request('/rooms?size=100');
+        indexOptions(data ? data.content : []);
+    } catch (e) {}
+    renderOptionFilters();
+    renderRoomOptionCheckboxes();
+}
+
+function renderOptionFilters() {
+    const opts = getAllOptions();
+    document.getElementById('optionFilters').innerHTML = opts.length === 0
+        ? '<p class="text-xs text-gray-400 col-span-full">Опций пока нет в системе</p>'
+        : opts.map(o => `
+            <label class="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-100 cursor-pointer hover:border-blue-200 transition ${selectedOptionIds.has(o.id) ? 'border-blue-400 bg-blue-50' : ''}">
+                <input type="checkbox" value="${o.id}" ${selectedOptionIds.has(o.id) ? 'checked' : ''} onchange="toggleOption(${o.id})" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+                <span class="text-sm font-medium">${escapeHtml(o.name)}</span>
+            </label>
+        `).join('');
+}
+
+function renderRoomOptionCheckboxes() {
+    const opts = getAllOptions();
+    document.getElementById('roomOptionCheckboxes').innerHTML = opts.length === 0
+        ? '<p class="text-xs text-gray-400 col-span-full">Опций пока нет в системе</p>'
+        : opts.map(o => `
+            <label class="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-100 cursor-pointer hover:border-blue-200 transition" data-opt="${o.id}">
+                <input type="checkbox" value="${o.id}" class="opt-check w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+                <span class="text-sm font-medium">${escapeHtml(o.name)}</span>
+            </label>
+        `).join('');
+}
+
+function toggleOption(id) {
+    if (selectedOptionIds.has(id)) selectedOptionIds.delete(id);
+    else selectedOptionIds.add(id);
+    renderOptionFilters();
+}
+
+// --- Поиск ---
+function applyFilters() {
+    roomsPage = 0;
+    if (currentTab === 'available') loadAvailable(0);
+    else loadRooms(0);
+}
+
+function collectFilterParams() {
+    const params = [];
+    const name = document.getElementById('fName').value.trim();
+    const capacity = document.getElementById('fCapacity').value;
+    const floor = document.getElementById('fFloor').value;
+    if (name) params.push('name=' + encodeURIComponent(name));
+    if (capacity) params.push('capacity=' + encodeURIComponent(capacity));
+    if (floor) params.push('floor=' + encodeURIComponent(floor));
+    const optArr = Array.from(selectedOptionIds);
+    if (optArr.length) params.push('optionIds=' + optArr.join('&optionIds='));
+    return params;
+}
+
+async function loadRooms(page) {
+    roomsPage = page;
+    const params = collectFilterParams();
+    params.push('page=' + page, 'size=12');
+    try {
+        const data = await request('/rooms?' + params.join('&'));
+        indexOptions(data.content);
+        renderRooms(data);
+    } catch (e) { console.error('loadRooms error:', e); }
+}
+
+async function loadAvailable(page) {
+    const mySeq = ++availReqSeq;
+    roomsPage = page;
+    const startVal = document.getElementById('fStart').value;
+    const endVal = document.getElementById('fEnd').value;
+    // безопасный фолбэк — ближайший час, а не "весь сегодняшний день"
+    const start = toBackendDateTime(startVal)
+        || toBackendDateTime(toDateTimeInput(new Date(Date.now() + 60 * 60 * 1000)));
+    const end = toBackendDateTime(endVal)
+        || toBackendDateTime(toDateTimeInput(new Date(Date.now() + 2 * 60 * 60 * 1000)));
+    const requiredCapacity = document.getElementById('fCapacity').value || 1;
+    const params = [];
+    params.push('requiredCapacity=' + encodeURIComponent(requiredCapacity));
+    params.push('startFrom=' + encodeURIComponent(start));
+    params.push('endTo=' + encodeURIComponent(end));
+    const name = document.getElementById('fName').value.trim();
+    const floor = document.getElementById('fFloor').value;
+    if (name) params.push('name=' + encodeURIComponent(name));
+    if (floor) params.push('floor=' + encodeURIComponent(floor));
+    const optArr = Array.from(selectedOptionIds);
+    if (optArr.length) params.push('optionIds=' + optArr.join('&optionIds='));
+    params.push('page=' + page, 'size=12');
+    try {
+        const data = await request('/rooms/available?' + params.join('&'));
+        if (mySeq !== availReqSeq) return; // игнорируем устаревший (более ранний) ответ
+        indexOptions(data.content);
+        renderRooms(data, true);
+    } catch (e) { console.error('loadAvailable error:', e); }
+}
+
+function renderRooms(data, availableMode) {
+    const grid = document.getElementById('roomsGrid');
+    if (!data.content || data.content.length === 0) {
+        grid.innerHTML = `<div class="col-span-full text-center text-gray-400 py-16">
+            <div class="text-6xl mb-4">🏠</div>
+            <p class="font-semibold">Ничего не найдено</p>
+            <p class="text-sm mt-1">Попробуй изменить фильтры${availableMode ? ' или временной интервал' : ''}</p>
+        </div>`;
+        document.getElementById('roomsPagination').innerHTML = '';
+        return;
+    }
+    grid.innerHTML = data.content.map(r => `
+        <div class="dash-card p-5 sm:p-6 flex flex-col cursor-pointer" onclick="openRoomDetail(${r.id})">
+            <div class="flex items-start justify-between gap-2 mb-3">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="text-3xl shrink-0">🚪</div>
+                    <div class="min-w-0">
+                        <h3 class="font-bold text-lg text-gray-900 truncate leading-none">${escapeHtml(r.name)}</h3>
+                        <p class="text-xs text-gray-400 mt-1">Этаж ${r.floor} · до ${r.capacity} чел.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="text-sm text-gray-500 mb-3 line-clamp-2">${escapeHtml(r.description || '')}</p>
+            <div class="flex flex-wrap gap-1.5 mb-4">
+                ${(r.options || []).map(o => '<span class="chip">' + escapeHtml(o.name) + '</span>').join('') || '<span class="text-xs text-gray-300">Без оснащения</span>'}
+            </div>
+            <div class="mt-auto flex items-center gap-2" onclick="event.stopPropagation()">
+                <button onclick="openRoomDetail(${r.id})" class="flex-1 text-xs font-bold text-blue-600 hover:text-blue-800 py-2 rounded-xl hover:bg-blue-50">Открыть</button>
+                <button onclick="editRoom(${r.id})" class="text-xs font-bold text-gray-600 hover:text-black px-3 py-2 rounded-xl hover:bg-gray-100" title="Изменить">✏️</button>
+                <button onclick="deleteRoom(${r.id})" class="text-xs font-bold text-red-500 hover:text-red-700 px-3 py-2 rounded-xl hover:bg-red-50" title="Удалить">🗑️</button>
+            </div>
+        </div>
+    `).join('');
+    renderPagination('roomsPagination', data, currentTab === 'available' ? loadAvailable : loadRooms);
+}
+
+// --- Детали комнаты ---
+async function openRoomDetail(id) {
+    detailRoomId = id;
+    detailRoomName = null;
+    try {
+        const r = await request('/rooms/' + id);
+        detailRoomName = r.name;
+        document.getElementById('detailName').textContent = r.name;
+        document.getElementById('detailMeta').textContent = 'Этаж ' + r.floor + ' · вместимость ' + r.capacity + ' чел.';
+        document.getElementById('detailDesc').textContent = r.description || '';
+        document.getElementById('detailOptions').innerHTML = (r.options || []).map(o => '<span class="chip">' + escapeHtml(o.name) + '</span>').join('') || '<span class="text-xs text-gray-300">Без оснащения</span>';
+    } catch (e) { console.error(e); }
+    await loadRoomSchedule();
+    document.getElementById('roomDetailModal').classList.add('open');
+}
+
+function closeRoomDetail() {
+    document.getElementById('roomDetailModal').classList.remove('open');
+}
+
+async function loadRoomSchedule() {
+    if (!detailRoomId) return;
+    const date = document.getElementById('detailDate').value || todayLocal();
+    try {
+        const list = await request('/rooms/' + detailRoomId + '/bookings?date=' + encodeURIComponent(date));
+        const el = document.getElementById('roomSchedule');
+        if (!list || list.length === 0) {
+            el.innerHTML = '<p class="text-sm text-gray-400 py-3 text-center">Свободно весь день 🎉</p>';
+            return;
+        }
+        el.innerHTML = list.map(b => `
+            <div class="flex items-center justify-between p-3 rounded-xl border border-gray-100">
+                <span class="font-semibold text-gray-800">${formatTimeRange(b.startAt, b.endAt)}</span>
+            </div>
+        `).join('');
+    } catch (e) { console.error('loadRoomSchedule error:', e); }
+}
+
+function openBookingForRoom() {
+    closeRoomDetail();
+    const now = new Date();
+    const later = new Date(now.getTime() + 60 * 60 * 1000);
+    document.getElementById('bookingRoomId').value = detailRoomId;
+    document.getElementById('bookingRoomName').textContent = detailRoomName || '';
+    document.getElementById('bookingStart').value = toDateTimeInput(now);
+    document.getElementById('bookingEnd').value = toDateTimeInput(later);
+    document.getElementById('bookingError').classList.add('hidden');
+    document.getElementById('bookingModal').classList.add('open');
+}
+
+function closeBookingModal() {
+    document.getElementById('bookingModal').classList.remove('open');
+}
+
+async function createBooking() {
+    const roomId = parseInt(document.getElementById('bookingRoomId').value);
+    const startAt = toBackendDateTime(document.getElementById('bookingStart').value);
+    const endAt = toBackendDateTime(document.getElementById('bookingEnd').value);
+    const err = document.getElementById('bookingError');
+    err.classList.add('hidden');
+    if (!startAt || !endAt) { err.textContent = 'Укажите время начала и конца'; err.classList.remove('hidden'); return; }
+    if (new Date(startAt) >= new Date(endAt)) { err.textContent = 'Время окончания должно быть позже начала'; err.classList.remove('hidden'); return; }
+    try {
+        await request('/bookings', { method: 'POST', body: JSON.stringify({ roomId, startAt, endAt }) });
+        closeBookingModal();
+        window.location.href = '/dashboard.html';
+    } catch (e) { err.textContent = e.message; err.classList.remove('hidden'); }
+}
+
+// --- Управление комнатами ---
+function openRoomModal() {
+    editingRoomId = null;
+    document.getElementById('roomModalTitle').textContent = 'Создать комнату';
+    document.getElementById('roomId').value = '';
+    document.getElementById('roomName').value = '';
+    document.getElementById('roomCapacity').value = '';
+    document.getElementById('roomFloor').value = '';
+    document.getElementById('roomDesc').value = '';
+    document.querySelectorAll('#roomOptionCheckboxes .opt-check').forEach(c => c.checked = false);
+    document.getElementById('roomError').classList.add('hidden');
+    document.getElementById('roomModal').classList.add('open');
+}
+
+async function editRoom(id) {
+    try {
+        const r = await request('/rooms/' + id);
+        editingRoomId = id;
+        document.getElementById('roomModalTitle').textContent = 'Редактировать комнату';
+        document.getElementById('roomId').value = id;
+        document.getElementById('roomName').value = r.name || '';
+        document.getElementById('roomCapacity').value = r.capacity != null ? r.capacity : '';
+        document.getElementById('roomFloor').value = r.floor != null ? r.floor : '';
+        document.getElementById('roomDesc').value = r.description || '';
+        const roomOptIds = (r.options || []).map(o => o.id);
+        document.querySelectorAll('#roomOptionCheckboxes .opt-check').forEach(c => {
+            c.checked = roomOptIds.includes(parseInt(c.value));
+        });
+        document.getElementById('roomError').classList.add('hidden');
+        document.getElementById('roomModal').classList.add('open');
+    } catch (e) { alert('Ошибка: ' + e.message); }
+}
+
+function closeRoomModal() {
+    document.getElementById('roomModal').classList.remove('open');
+}
+
+function collectRoomOptionIds() {
+    const ids = [];
+    document.querySelectorAll('#roomOptionCheckboxes .opt-check').forEach(c => { if (c.checked) ids.push(parseInt(c.value)); });
+    return ids;
+}
+
+async function saveRoom() {
+    const id = document.getElementById('roomId').value;
+    const name = document.getElementById('roomName').value.trim();
+    const capacity = parseInt(document.getElementById('roomCapacity').value);
+    const floor = parseInt(document.getElementById('roomFloor').value);
+    const description = document.getElementById('roomDesc').value.trim();
+    const optionIds = collectRoomOptionIds();
+    const err = document.getElementById('roomError');
+    err.classList.add('hidden');
+    if (!name) { err.textContent = 'Введите название'; err.classList.remove('hidden'); return; }
+    if (!capacity || capacity <= 0) { err.textContent = 'Вместимость должна быть больше 0'; err.classList.remove('hidden'); return; }
+    if (isNaN(floor) || floor < 0) { err.textContent = 'Этаж не может быть отрицательным'; err.classList.remove('hidden'); return; }
+    if (!description) { err.textContent = 'Введите описание'; err.classList.remove('hidden'); return; }
+    if (optionIds.length === 0) { err.textContent = 'Выберите хотя бы одну опцию оснащения'; err.classList.remove('hidden'); return; }
+    const body = { name, capacity, floor, description, optionIds };
+    try {
+        if (id) {
+            body.id = parseInt(id);
+            await request('/rooms', { method: 'PATCH', body: JSON.stringify(body) });
+        } else {
+            await request('/rooms', { method: 'POST', body: JSON.stringify(body) });
+        }
+        closeRoomModal();
+        await ensureOptions();
+        applyFilters();
+    } catch (e) { err.textContent = e.message; err.classList.remove('hidden'); }
+}
+
+async function deleteRoom(id) {
+    if (!confirm('Удалить комнату #' + id + '? Все её брони также будут удалены.')) return;
+    try {
+        await request('/rooms/' + id, { method: 'DELETE' });
+        await ensureOptions();
+        applyFilters();
+    } catch (e) { alert('Ошибка: ' + e.message); }
+}
+</script>
+</body>
+</html>

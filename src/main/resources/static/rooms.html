@@ -183,11 +183,12 @@ function prefillAvailabilityDates() {
     }
 }
 
-// --- Опции (кэш из комнат) ---
+// --- Опции (загружаем из отдельного эндпоинта) ---
 async function ensureOptions() {
     try {
-        const data = await request('/rooms?size=100');
-        indexOptions(data ? data.content : []);
+        const data = await request('/options?size=1000');
+        optionCache.clear();
+        (data ? data.content : []).forEach(o => { if (o && o.id) optionCache.set(o.id, o.name); });
     } catch (e) {}
     renderOptionFilters();
     renderRoomOptionCheckboxes();

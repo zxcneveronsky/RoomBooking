@@ -11,7 +11,7 @@ import com.example.roombooking.entity.OptionEntity;
 import com.example.roombooking.exception.OptionNotFoundException;
 import com.example.roombooking.repository.OptionRepository;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service

@@ -26,7 +26,7 @@ public class RoomService {
 
     @Transactional(readOnly = true)
     public RoomEntity getRoomById(Long roomId) {
-        return roomRepository.findByIdWithOptions(roomId)
+        return roomRepository.findById(roomId)
                 .orElseThrow(() -> new RoomNotFoundException(roomId));
     }
 

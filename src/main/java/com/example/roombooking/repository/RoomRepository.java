@@ -2,6 +2,7 @@ package com.example.roombooking.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +16,7 @@ import com.example.roombooking.entity.RoomEntity;
 public interface RoomRepository extends JpaRepository<RoomEntity, Long> {
 
     @EntityGraph(attributePaths = {"options"})
-    Optional<RoomEntity> findByIdWithOptions(Long id);
+    Optional<RoomEntity> findById(Long id);
 
     @EntityGraph(attributePaths = {"options"})
     @Query("""
@@ -60,6 +61,4 @@ public interface RoomRepository extends JpaRepository<RoomEntity, Long> {
         Pageable pageable
     );
 
-    @EntityGraph(attributePaths = {"options"})
-    Optional<RoomEntity> findByIdWithOptions(Long id);
 }

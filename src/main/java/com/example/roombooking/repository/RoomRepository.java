@@ -18,9 +18,8 @@ public interface RoomRepository extends JpaRepository<RoomEntity, Long> {
     @EntityGraph(attributePaths = {"options"})
     Optional<RoomEntity> findById(Long id);
 
-    @EntityGraph(attributePaths = {"options"})
     @Query("""
-        SELECT r FROM RoomEntity r
+        SELECT DISTINCT r FROM RoomEntity r LEFT JOIN FETCH r.options
         WHERE (:name IS NULL OR LENGTH(TRIM(CAST(:name AS string))) = 0 OR LOWER(r.name) LIKE CONCAT('%', LOWER(CAST(:name AS string)), '%'))
           AND (:capacity IS NULL OR r.capacity >= :capacity)
           AND (:floor IS NULL OR r.floor = :floor)
@@ -36,9 +35,9 @@ public interface RoomRepository extends JpaRepository<RoomEntity, Long> {
         Pageable pageable
     );
 
-    @EntityGraph(attributePaths = {"options"})
     @Query("""
-        SELECT r FROM RoomEntity r
+        SELECT DISTINCT r FROM RoomEntity r
+        LEFT JOIN FETCH r.options
         WHERE (:name IS NULL OR LENGTH(TRIM(CAST(:name AS string))) = 0 OR LOWER(r.name) LIKE CONCAT('%', LOWER(CAST(:name AS string)), '%'))
           AND r.capacity >= :requiredCapacity
           AND (:floor IS NULL OR r.floor = :floor)

@@ -13,8 +13,10 @@ import org.springframework.data.repository.query.Param;
 import com.example.roombooking.entity.BookingEntity;
 
 public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
+    @Query("SELECT b FROM BookingEntity b JOIN FETCH b.room WHERE b.id = :id AND b.user.id = :userId")
     Optional<BookingEntity> findByIdAndUserId(Long id, Long userId);
     @Query("SELECT b FROM BookingEntity b " +
+        "JOIN FETCH b.room "+
        "WHERE b.user.id = :userId " +
        "AND b.endAt > :startFrom " +
        "AND b.startAt < :endTo")
@@ -55,6 +57,7 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
 
     @Query("""
         SELECT b FROM BookingEntity b
+        JOIN FETCH b.room 
         WHERE b.room.id = :roomId
           AND b.endAt   > :from
           AND b.startAt < :to

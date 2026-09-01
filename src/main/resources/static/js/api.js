@@ -58,10 +58,13 @@ async function request(path, options = {}) {
     const headers = { 'Content-Type': 'application/json', ...options.headers };
     if (token) headers['Authorization'] = `Bearer ${token}`;
     const res = await fetch(`${API}${path}`, { ...options, headers });
-    if (res.status === 401 || res.status === 403) {
+    if (res.status === 401) {
         clearToken();
         window.location.href = '/login.html';
         return null;
+    }
+    if (res.status === 403) {
+        throw new Error('Недостаточно прав');
     }
     if (res.status === 204) return null;
     if (!res.ok) {

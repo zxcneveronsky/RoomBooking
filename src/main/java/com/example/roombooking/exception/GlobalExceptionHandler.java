@@ -104,4 +104,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handleDataIntegrity(DataIntegrityViolationException ex) {
         return buildResponse("Опция с таким названием уже существует.", HttpStatus.CONFLICT);
 }
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<Object> handleSpringAccessDenied(
+        org.springframework.security.access.AccessDeniedException ex) {
+    return buildResponse("Недостаточно прав.", HttpStatus.FORBIDDEN);
+}
 }

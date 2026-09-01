@@ -1,6 +1,6 @@
 package com.example.roombooking.controller;
-
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,6 +42,7 @@ public class OptionController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     public OptionResponse create(@Valid @RequestBody CreateOptionRequest request) {
         return optionMapper.toResponse(optionService.create(optionMapper.toEntity(request)));
@@ -49,6 +50,7 @@ public class OptionController {
 
 
     @PatchMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.OK)
     public OptionResponse update(@Valid @RequestBody UpdateOptionRequest request) {
         return optionMapper.toResponse(optionService.update(optionMapper.toEntity(request)));
@@ -56,6 +58,7 @@ public class OptionController {
 
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable("id") Long id) {
         optionService.delete(id);

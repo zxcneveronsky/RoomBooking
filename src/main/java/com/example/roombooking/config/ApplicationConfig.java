@@ -7,12 +7,15 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import org.springframework.cache.annotation.EnableCaching;
+
 import com.example.roombooking.repository.UserRepository;
 import com.example.roombooking.security.UserDetailsAdapter;
 
 import lombok.RequiredArgsConstructor;
 
 @Configuration
+@EnableCaching
 @RequiredArgsConstructor
 public class ApplicationConfig {
 

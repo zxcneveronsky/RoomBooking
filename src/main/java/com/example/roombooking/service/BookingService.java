@@ -9,6 +9,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+
 import com.example.roombooking.entity.BookingEntity;
 import com.example.roombooking.exception.BookingNotFoundException;
 import com.example.roombooking.exception.RoomAlreadyBookedException;
@@ -39,6 +42,7 @@ public class BookingService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable("bookings")
     public Page<BookingEntity> getAllBookings(Long userId, LocalDate date, Pageable pageable) {
         return bookingRepository.findAllBookingsInPeriodByUserId(
                 userId,
@@ -54,6 +58,7 @@ public class BookingService {
     }
 
     @Transactional
+    @CacheEvict(value = "bookings", allEntries = true)
     public BookingEntity createBooking(BookingEntity bookingEntity, Long userId, Long roomId) {
         if (bookingRepository.existsByRoomIdAndPeriod(roomId, bookingEntity.getStartAt(), bookingEntity.getEndAt())) {
             throw new RoomAlreadyBookedException();
@@ -64,6 +69,7 @@ public class BookingService {
     }
 
     @Transactional
+    @CacheEvict(value = "bookings", allEntries = true)
     public BookingEntity updateBooking(BookingEntity bookingUpdate, Long userId, Long roomId) {
         Long bookingId = bookingUpdate.getId();
         BookingEntity updatedBooking = bookingRepository.findByIdAndUserId(bookingId, userId)
@@ -86,6 +92,7 @@ public class BookingService {
     }
 
     @Transactional
+    @CacheEvict(value = "bookings", allEntries = true)
     public void deleteBooking(Long bookingId, Long userId) {
         if (!bookingRepository.existsByIdAndUserId(bookingId, userId)) {
             throw new BookingNotFoundException(bookingId);

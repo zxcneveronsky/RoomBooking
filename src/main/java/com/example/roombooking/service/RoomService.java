@@ -8,6 +8,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+
 import com.example.roombooking.entity.OptionEntity;
 import com.example.roombooking.entity.RoomEntity;
 import com.example.roombooking.exception.OptionNotFoundException;
@@ -31,6 +34,7 @@ public class RoomService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable("rooms")
     public Page<RoomEntity> searchRooms(
             String name,
             Integer capacity,
@@ -42,6 +46,7 @@ public class RoomService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable("rooms")
     public Page<RoomEntity> searchAvailableRooms(
             String name,
             Integer requiredCapacity,
@@ -55,6 +60,7 @@ public class RoomService {
     }
 
     @Transactional
+    @CacheEvict(value = "rooms", allEntries = true)
     public RoomEntity createRoom(RoomEntity roomEntity, List<Long> optionIds) {
         List<Long> distinctOptionIds = optionIds.stream().distinct().toList();
         List<OptionEntity> options = optionRepository.findAllById(distinctOptionIds);
@@ -71,6 +77,7 @@ public class RoomService {
     }
 
     @Transactional
+    @CacheEvict(value = "rooms", allEntries = true)
     public RoomEntity updateRoom(RoomEntity roomUpdate, List<Long> optionIds) {
         Long roomId = roomUpdate.getId();
         RoomEntity updatedRoom = roomRepository.findById(roomId)
@@ -103,6 +110,7 @@ public class RoomService {
     }
 
     @Transactional
+    @CacheEvict(value = "rooms", allEntries = true)
     public void deleteRoom(Long roomId) {
         if (!roomRepository.existsById(roomId)) {
             throw new RoomNotFoundException(roomId);

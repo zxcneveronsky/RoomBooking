@@ -9,6 +9,7 @@ import com.example.roombooking.service.BookingService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
 
@@ -32,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/bookings")
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 public class BookingController {
 
     private final BookingService bookingService;
@@ -58,6 +60,7 @@ public class BookingController {
     public BookingResponse createBooking(
         @AuthenticationPrincipal UserDetailsAdapter adapter,
         @Valid @RequestBody CreateBookingRequest request) {
+        log.info("Создано бронирование: roomId={}, userId={}", request.roomId(), adapter.getUserId());
         return bookingMapper.toResponse(bookingService.createBooking(bookingMapper.toEntity(request), adapter.getUserId(), request.roomId()));
     }
 
@@ -66,6 +69,7 @@ public class BookingController {
     public BookingResponse updateBooking(
         @AuthenticationPrincipal UserDetailsAdapter adapter,
         @Valid @RequestBody UpdateBookingRequest request) {
+        log.info("Обновлено бронирование: roomId={}", request.roomId());
         return bookingMapper.toResponse(bookingService.updateBooking(bookingMapper.toEntity(request), adapter.getUserId(), request.roomId()));
     }
 
@@ -75,5 +79,6 @@ public class BookingController {
         @AuthenticationPrincipal UserDetailsAdapter adapter,
         @PathVariable("id") Long bookingId) {
         bookingService.deleteBooking(bookingId, adapter.getUserId());
+        log.info("Удалено бронирование: bookingId={}", bookingId);
     }
 }

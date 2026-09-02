@@ -16,9 +16,11 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j 
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
@@ -49,6 +51,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 }
             }
         } catch (JwtException | IllegalArgumentException | UsernameNotFoundException e) {
+            log.warn("Невалидный токен: {}", e.getMessage());
             SecurityContextHolder.clearContext();
         }
 

@@ -17,36 +17,45 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
     @ExceptionHandler({UserNotFoundException.class, RoomNotFoundException.class, OptionNotFoundException.class})
     public ResponseEntity<Object> handleNotFound(RuntimeException ex) {
+        log.warn("Ресурс не найден: {}", ex.getMessage());
         return buildResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
+        
     }
 
     @ExceptionHandler({UserAlreadyExistsException.class, RoomAlreadyBookedException.class})
     public ResponseEntity<Object> handleAlreadyExists(RuntimeException ex) {
+        log.warn("Уже существует: {}", ex.getMessage());
         return buildResponse(ex.getMessage(), HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(InvalidPasswordException.class)
     public ResponseEntity<Object> handleInvalidPassword(InvalidPasswordException ex) {
+        log.warn("Неверный пароль: {}", ex.getMessage());
         return buildResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Object> handleAccessDenied(AccessDeniedException ex) {
+        log.warn("Доступ запрещён: {}", ex.getMessage());
         return buildResponse(ex.getMessage(), HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> handleIllegalArgument(IllegalArgumentException ex) {
+        log.warn("Некорректный аргумент: {}", ex.getMessage());
         return buildResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Object> handleConstraintViolation(ConstraintViolationException ex) {
+        log.warn("Ошибка валидации: {}", ex.getMessage());
         return buildResponse("Ошибка валидации: " + ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
@@ -55,6 +64,7 @@ public class GlobalExceptionHandler {
         String errors = ex.getBindingResult().getFieldErrors().stream()
                 .map(e -> e.getField() + ": " + e.getDefaultMessage())
                 .collect(Collectors.joining(", "));
+        log.warn("Ошибка валидации: {}", errors);
         return buildResponse("Ошибка валидации: " + errors, HttpStatus.BAD_REQUEST);
     }
 
@@ -87,6 +97,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleAll(Exception ex) {
+        log.error("Внутренняя ошибка сервера", ex);
         return buildResponse("Внутренняя ошибка сервера", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -107,6 +118,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
     public ResponseEntity<Object> handleSpringAccessDenied(
         org.springframework.security.access.AccessDeniedException ex) {
+    log.warn("Доступ запрещён (Spring): {}", ex.getMessage());
     return buildResponse("Недостаточно прав.", HttpStatus.FORBIDDEN);
 }
 }

@@ -31,11 +31,13 @@ import com.example.roombooking.service.RoomService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/v1/rooms")
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 public class RoomController {
 
     private final RoomService roomService;
@@ -86,6 +88,7 @@ public class RoomController {
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     public RoomResponse createRoom(@Valid @RequestBody CreateRoomRequest request) {
+        log.info("Создана комната: name={}", request.name());
         return roomMapper.toResponse(roomService.createRoom(roomMapper.toEntity(request), request.optionIds()));
     }
 
@@ -93,13 +96,15 @@ public class RoomController {
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.OK)
     public RoomResponse updateRoom(@Valid @RequestBody UpdateRoomRequest request) {
-        return roomMapper.toResponse(roomService.updateRoom(roomMapper.toEntity(request), request.optionIds()));
+        log.info("Обновлена комната: roomId={}", request.id());
+        return roomMapper.toResponse(roomService.updateRoom(roomMapper.toEntity(request), request.optionIds())); 
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteRoom(@PathVariable("id") Long roomId) {
+        log.info("Удалена комната: roomId={}", roomId);
         roomService.deleteRoom(roomId);
     }
 }

@@ -20,11 +20,13 @@ import com.example.roombooking.service.UserService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 public class AuthController {
 
     private final UserService userService;
@@ -33,11 +35,13 @@ public class AuthController {
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public AuthResponse register(@Valid @RequestBody AuthRequest request) {
+        log.info("Зарегистрирован пользователь: {}", request.email());
         return userService.registerUser(userMapper.toEntity(request));
     }
 
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody AuthRequest request) {
+        log.info("Пользователь вошёл в систему: {}", request.email());
         return userService.loginUser(request.email(), request.password());
     }
 
@@ -48,6 +52,7 @@ public class AuthController {
         if (!adapter.getUserId().equals(userId)) {
             throw new AccessDeniedException();
         }
+        log.info("Удалён пользователь: userId={}", userId);
         userService.deleteUser(userId);
     }
 }

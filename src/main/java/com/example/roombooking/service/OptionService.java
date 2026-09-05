@@ -4,9 +4,6 @@ import com.example.roombooking.mapper.OptionMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import com.example.roombooking.dto.request.CreateOptionRequest;
-import com.example.roombooking.dto.response.OptionResponse;
 import com.example.roombooking.entity.OptionEntity;
 import com.example.roombooking.exception.OptionNotFoundException;
 import com.example.roombooking.repository.OptionRepository;

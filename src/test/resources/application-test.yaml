@@ -22,7 +22,7 @@ spring:
       spec: maximumSize=500,expireAfterAccess=1h
 
 jwt:
-  secret: test-secret-key-test-secret-key-test-secret-key-1234
+  secret: dGVzdC1zZWNyZXQta2V5LXRlc3Qtc2VjcmV0LWtleS0xMjM0
   expiration: 86400000
 
 logging:
